@@ -48,7 +48,7 @@ await withTransaction(async (db) => {
           `INSERT INTO solar_installations (substation_id, meter_id, capacity_kw, device_secret_hash)
            VALUES ($1, $2, $3, $4)
            ON CONFLICT (meter_id) DO UPDATE SET substation_id = EXCLUDED.substation_id,
-             capacity_kw = EXCLUDED.capacity_kw
+             capacity_kw = EXCLUDED.capacity_kw, device_secret_hash = EXCLUDED.device_secret_hash
            RETURNING id, capacity_kw`, [substation.id, meterId, capacityKw, hash]
         )).rows[0];
         installations.push({ id: installation.id, capacityKw, ordinal });
@@ -68,7 +68,7 @@ await withTransaction(async (db) => {
     const hash = await hashSecret(deriveSeedSecret(master, `user:${username}`));
     await db.query(
       `INSERT INTO users (username, password_hash, role, province_id, district_id)
-       VALUES ($1, $2, $3, $4, $5) ON CONFLICT (username) DO NOTHING`,
+       VALUES ($1, $2, $3, $4, $5) ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
       [username, hash, role, provinceId, districtId]
     );
   }
