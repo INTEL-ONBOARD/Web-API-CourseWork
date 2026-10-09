@@ -58,7 +58,7 @@ function schemaFor(kind, method, nested = false) {
   if (kind === 'installation' && method === 'POST') {
     fields.device_secret = z.string().min(20).max(256);
     fields.status = fields.status.optional();
-  } else if (kind === 'installation') {
+  } else if (kind === 'installation' && method === 'PATCH') {
     fields.device_secret = z.string().min(20).max(256).optional();
   }
   let schema = z.strictObject(fields);
@@ -137,6 +137,11 @@ async function updateCatalog(request, response, kind, id, method) {
     assertIfMatch(request, current);
     const entries = Object.entries(body);
     if (!entries.length) throw badRequest('No fields to update');
+    const changed = entries.some(([field, value]) => {
+      if (field === 'device_secret_hash') return true;
+      return current[field] !== value;
+    });
+    if (!changed) return current;
     const assignments = entries.map(([field], index) => `${field} = $${index + 1}`);
     const values = entries.map(([_field, value]) => value);
     values.push(id);

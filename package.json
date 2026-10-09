@@ -14,7 +14,8 @@
     "seed": "node scripts/seed.js",
     "demo:credentials": "node scripts/show-demo-credentials.js",
     "test": "node --test",
-    "check": "node --check src/server.js && node --check src/app.js"
+    "check": "node --check src/server.js && node --check src/app.js && node --check src/catalog.js && node --check src/readings.js",
+    "check:openapi": "node scripts/validate-openapi.js"
   },
   "dependencies": {
     "dotenv": "^18.0.7",
@@ -27,6 +28,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "^13.0.0",
     "supertest": "^7.3.1"
   }
 }

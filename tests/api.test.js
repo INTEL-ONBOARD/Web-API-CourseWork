@@ -111,6 +111,10 @@ test('admin metadata CRUD respects If-Match and dependent-record protection', as
     .set('If-Match', created.headers.etag).send({ name: 'Changed' });
   assert.equal(updated.status, 200, JSON.stringify(updated.body));
   assert.equal(updated.body.name, 'Changed');
+  const replaced = await api.put(created.headers.location).auth(tokens.admin, { type: 'bearer' })
+    .send({ code, name: 'Changed' });
+  assert.equal(replaced.status, 200, JSON.stringify(replaced.body));
+  assert.equal(replaced.headers.etag, updated.headers.etag);
   const deleted = await api.delete(created.headers.location).auth(tokens.admin, { type: 'bearer' });
   assert.equal(deleted.status, 204);
   temporaryProvinceId = undefined;
@@ -125,4 +129,5 @@ test('district summary is scoped and includes measurement units', async () => {
   assert.equal(summary.body.time_zone, 'Asia/Colombo');
   assert.equal(typeof summary.body.current_power_kw, 'number');
   assert.equal(typeof summary.body.today_energy_kwh, 'number');
+  assert.equal(summary.headers['last-modified'], undefined);
 });

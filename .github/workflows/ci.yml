@@ -1,0 +1,39 @@
+name: API checks
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: solar
+          POSTGRES_USER: solar
+          POSTGRES_PASSWORD: solar_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solar -d solar"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://solar:solar_ci_only@localhost:5432/solar
+      JWT_SECRET: ci-only-jwt-secret-longer-than-thirty-two-characters
+      SEED_CREDENTIAL_MASTER: ci-only-seed-master-longer-than-thirty-two-characters
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run check:openapi
+      - run: npm run migrate
+      - run: npm run seed
+      - run: npm test
+      - run: docker build -t slsea-solar-api:ci .

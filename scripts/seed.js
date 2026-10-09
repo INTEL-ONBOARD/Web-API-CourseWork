@@ -74,9 +74,15 @@ await withTransaction(async (db) => {
   }
 });
 
+const existingSeedStart = (await pool.query(
+  `SELECT min(r.recorded_at) AS first_reading FROM generation_readings r
+   JOIN solar_installations i ON i.id = r.installation_id WHERE i.meter_id = 'SLSEA-0001'`
+)).rows[0].first_reading;
 const anchor = process.env.SEED_ANCHOR_DATE
   ? new Date(process.env.SEED_ANCHOR_DATE)
-  : new Date(Math.floor(Date.now() / 900_000) * 900_000);
+  : existingSeedStart
+    ? new Date(new Date(existingSeedStart).getTime() + 671 * 900_000)
+    : new Date(Math.floor(Date.now() / 900_000) * 900_000);
 if (Number.isNaN(anchor.getTime())) throw new Error('SEED_ANCHOR_DATE must be an ISO timestamp');
 
 const batch = [];
