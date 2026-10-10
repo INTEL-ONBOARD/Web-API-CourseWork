@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: solar
+      POSTGRES_USER: solar
+      POSTGRES_PASSWORD: solar_local_only
+    ports:
+      - "5432:5432"
+    volumes:
+      - solar_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U solar -d solar"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgres://solar:solar_local_only@db:5432/solar
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      SEED_CREDENTIAL_MASTER: ${SEED_CREDENTIAL_MASTER:?Set SEED_CREDENTIAL_MASTER in .env}
+      PORT: 3000
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sh", "-c", "npm run migrate && npm start"]
+volumes:
+  solar_pg_data:
