@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up the SLSEA solar API PostgreSQL database
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/slsea-solar-api/scripts/backup-production.sh
+User=root

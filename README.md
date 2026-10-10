@@ -58,4 +58,6 @@ Run `npm run check`, `npm run check:openapi`, and `npm test` after seeding. The 
 
 Build the Docker image on any HTTPS-capable host that supplies a persistent PostgreSQL database. Set `DATABASE_URL`, `JWT_SECRET`, `SEED_CREDENTIAL_MASTER`, `PORT`, and `NODE_ENV=production` as private environment variables. Run `npm run migrate` once per release, and `npm run seed` once on an empty database. Verify `/health`, `/docs`, `/openapi.json`, an authenticated history request, and a denial request on the public URL. Keep the service and database available through the marking and viva period. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the release checklist.
 
+Current deployment: [public Swagger UI](https://solar-api.84-247-139-75.sslip.io/docs/) and [health endpoint](https://solar-api.84-247-139-75.sslip.io/health). The API runs in an isolated Compose stack on the supplied server; PostgreSQL is private to the stack. The `sslip.io` hostname resolves the server IP and can be replaced with a student-owned domain before submission.
+
 The coursework report must be written in the student's own prose. AI-assisted code and aids must be disclosed in the report appendix; the project log in [docs/AI_ASSISTANCE_LOG.md](docs/AI_ASSISTANCE_LOG.md) records this development session for that purpose.

@@ -16,3 +16,11 @@ Live deployment, repository sharing, the signed declaration, and the student's r
 ## Production Compose layout
 
 `compose.production.yaml` creates a separate `slsea-solar-api` stack. PostgreSQL has no published host port and stores data in a named Docker volume. The API listens only on the host loopback address at port 4400; the host's HTTPS reverse proxy should forward a dedicated hostname to `127.0.0.1:4400`. Keep the production `.env` at the server checkout with mode `0600`, and back up the database volume regularly. After code changes, rebuild the API image and verify health, Swagger, authenticated reads, and the existing data count.
+
+### Deployed host, 10 October 2026
+
+- Server checkout: `/opt/slsea-solar-api`; Compose project: `slsea-solar-api`.
+- Public HTTPS hostname: `solar-api.84-247-139-75.sslip.io`; Caddy proxies it to loopback port 4400. Caddy manages the trusted certificate. The existing Caddy configuration was backed up before adding this separate host block.
+- Run `docker compose -f compose.production.yaml ps` in the checkout to inspect health. `/health`, `/docs/`, and `/openapi.json` have been verified from outside the server. A national analyst token retrieved 9 provinces and 672 readings for installation 1; a district token got 404 for another district.
+- `scripts/backup-production.sh` writes a private custom-format PostgreSQL dump into `backups/` and removes backups older than 14 days. The systemd timer in `deploy/` runs it daily at 02:30 UTC. Restore testing is a separate operational check; do not treat an untested dump as a complete disaster-recovery plan.
+- The `sslip.io` name is third-party convenience DNS. Replace it with a student-controlled domain if one is available for longer-term submission reliability.

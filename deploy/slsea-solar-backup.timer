@@ -1,0 +1,9 @@
+[Unit]
+Description=Daily backup of the SLSEA solar API database
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target
