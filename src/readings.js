@@ -175,7 +175,7 @@ readingsRouter.get('/solar-installations/:installationId/last-known-reading', re
     installation_id: installationId,
     reading: latest,
     is_stale: Date.now() - new Date(latest.recorded_at).getTime() > 30 * 60_000,
-  }, { lastModified: latest.received_at });
+  });
 });
 
 readingsRouter.get('/solar-installations/:installationId/overview', requireAnalyst, async (request, response) => {
@@ -199,7 +199,7 @@ readingsRouter.get('/solar-installations/:installationId/overview', requireAnaly
     hierarchy,
     last_known_reading: latest,
     is_stale: latest ? Date.now() - new Date(latest.recorded_at).getTime() > 30 * 60_000 : true,
-  }, { lastModified: latest?.received_at ?? installation.updated_at });
+  });
 });
 
 readingsRouter.get('/districts/:districtId/generation-summary', requireAnalyst, async (request, response) => {
@@ -248,5 +248,5 @@ readingsRouter.get('/districts/:districtId/generation-summary', requireAnalyst, 
     stale_installation_count: summary.installation_count - summary.fresh_count,
     current_power_kw: Number(summary.current_power_kw),
     today_energy_kwh: Number(summary.today_energy_kwh),
-  }, { lastModified: summary.latest_recorded_at });
+  });
 });
