@@ -13,7 +13,7 @@ This maps the supplied brief and rubric to the implementation. It is a developme
 | District aggregate stretch | `/districts/{id}/generation-summary` | Integration test checks scoped shape and units |
 | JWT write/read separation and jurisdiction | `src/auth.js`, `src/access.js` | Tests deny cross-device write, cross-district read, device read |
 | Consistent JSON client errors | `src/errors.js`, OpenAPI error schema | Tests check 400, 403/404, 406, 409, 412 |
-| Docker, public HTTPS, live Swagger | `Dockerfile`, `compose.yaml`, `/docs` | Local Docker and docs verified; **public host still needed** |
+| Docker, public HTTPS, live Swagger | `Dockerfile`, `compose.production.yaml`, public `/docs` | Public health, Swagger and OpenAPI returned 200 over trusted HTTPS on 10 October 2026 |
 | Incremental shared Git history | Separate specification, database, API, and quality commits | Push to GitHub; module-leader invitation needs identity/account action |
 | Report and viva | Brief/template and `docs/AI_ASSISTANCE_LOG.md` | Student writes 2,250–2,750 words, signs declaration, discloses prompts, and defends code |
 
@@ -31,5 +31,5 @@ Use the supplied report template and write each section in your own words:
 ## Blocking external inputs
 
 - The module's **REST API Design Guidelines** white paper was not in the supplied folder. Compare URI and HTTP decisions against it before submission.
-- A durable public HTTPS host and database account are needed for the required live deployment.
+- The live host uses third-party `sslip.io` DNS; a student-controlled domain is preferable if available before submission.
 - The module leader's GitHub identity must be confirmed to add the required repository collaborator.
