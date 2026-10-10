@@ -13,7 +13,7 @@ trap 'rm -f "$temporary"' EXIT
 
 cd "$project_dir"
 docker compose -f compose.production.yaml exec -T db \
-  pg_dump -U solar -d solar -Fc > "$temporary"
+  pg_dump -U solar -d solar -Fc </dev/null > "$temporary"
 test -s "$temporary"
 mv "$temporary" "$final"
 trap - EXIT
