@@ -1,0 +1,244 @@
+openapi: 3.0.3
+info:
+  title: SLSEA Solar Generation Data API
+  version: 0.1.0
+  description: >-
+    Backend API for synthetic solar-generation coursework data. Devices ingest
+    readings for their own installations; SLSEA users read only within their
+    jurisdictions. Readings are append-only.
+servers:
+  - url: /api/v1
+tags:
+  - name: Authentication
+  - name: Geography
+  - name: Installations
+  - name: Readings
+  - name: Operations
+paths:
+  /auth/user-tokens:
+    post:
+      tags: [Authentication]
+      summary: Exchange analyst or administrator credentials for a bearer token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Credentials' }
+      responses:
+        '200': { description: Bearer token, content: { application/json: { schema: { $ref: '#/components/schemas/Token' } } } }
+        '401': { $ref: '#/components/responses/Error' }
+  /auth/device-tokens:
+    post:
+      tags: [Authentication]
+      summary: Exchange meter ID and device secret for a bearer token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Credentials' }
+      responses:
+        '200': { description: Bearer token, content: { application/json: { schema: { $ref: '#/components/schemas/Token' } } } }
+        '401': { $ref: '#/components/responses/Error' }
+  /provinces:
+    get:
+      tags: [Geography]
+      summary: List provinces visible to the caller
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Collection' }
+        '401': { $ref: '#/components/responses/Error' }
+    post:
+      tags: [Geography]
+      summary: Create a province (administrator)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProvinceInput' }
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '403': { $ref: '#/components/responses/Error' }
+  /provinces/{provinceId}:
+    parameters: [{ $ref: '#/components/parameters/provinceId' }]
+    get: { tags: [Geography], summary: Get a province, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' }, '404': { $ref: '#/components/responses/Error' } } }
+    put: { tags: [Geography], summary: Replace province metadata, security: [{ bearerAuth: [] }], requestBody: { $ref: '#/components/requestBodies/Province' }, responses: { '200': { $ref: '#/components/responses/Item' }, '412': { $ref: '#/components/responses/Error' } } }
+    patch: { tags: [Geography], summary: Update province metadata, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' }, '412': { $ref: '#/components/responses/Error' } } }
+    delete: { tags: [Geography], summary: Delete a province without dependents, security: [{ bearerAuth: [] }], responses: { '204': { description: Deleted }, '409': { $ref: '#/components/responses/Error' } } }
+  /provinces/{provinceId}/districts:
+    parameters: [{ $ref: '#/components/parameters/provinceId' }]
+    get: { tags: [Geography], summary: List districts in a province, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Collection' } } }
+    post: { tags: [Geography], summary: Create a district in a province, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' } } }
+  /districts/{districtId}:
+    parameters: [{ $ref: '#/components/parameters/districtId' }]
+    get: { tags: [Geography], summary: Get a district, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+    put: { tags: [Geography], summary: Replace district metadata, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+    patch: { tags: [Geography], summary: Update district metadata, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+    delete: { tags: [Geography], summary: Delete a district without dependents, security: [{ bearerAuth: [] }], responses: { '204': { description: Deleted } } }
+  /districts/{districtId}/grid-substations:
+    parameters: [{ $ref: '#/components/parameters/districtId' }]
+    get: { tags: [Geography], summary: List substations in a district, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Collection' } } }
+    post: { tags: [Geography], summary: Create a substation in a district, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' } } }
+  /grid-substations/{substationId}:
+    parameters: [{ $ref: '#/components/parameters/substationId' }]
+    get: { tags: [Geography], summary: Get a substation, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+    put: { tags: [Geography], summary: Replace substation metadata, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+    patch: { tags: [Geography], summary: Update substation metadata, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+    delete: { tags: [Geography], summary: Delete a substation without dependents, security: [{ bearerAuth: [] }], responses: { '204': { description: Deleted } } }
+  /grid-substations/{substationId}/solar-installations:
+    parameters: [{ $ref: '#/components/parameters/substationId' }]
+    get: { tags: [Installations], summary: List installations at a substation, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Collection' } } }
+    post: { tags: [Installations], summary: Provision an installation and device secret, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' } } }
+  /solar-installations/{installationId}:
+    parameters: [{ $ref: '#/components/parameters/installationId' }]
+    get: { tags: [Installations], summary: Get an installation, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+    put: { tags: [Installations], summary: Replace installation metadata, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+    patch: { tags: [Installations], summary: Update installation metadata, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+    delete: { tags: [Installations], summary: Delete an installation without readings, security: [{ bearerAuth: [] }], responses: { '204': { description: Deleted } } }
+  /solar-installations/{installationId}/overview:
+    parameters: [{ $ref: '#/components/parameters/installationId' }]
+    get: { tags: [Installations], summary: Composite installation and geographic context with latest reading, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+  /solar-installations/{installationId}/last-known-reading:
+    parameters: [{ $ref: '#/components/parameters/installationId' }]
+    get: { tags: [Operations], summary: Latest reading with freshness flag, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' }, '404': { $ref: '#/components/responses/Error' } } }
+  /solar-installations/{installationId}/generation-readings:
+    parameters: [{ $ref: '#/components/parameters/installationId' }]
+    get:
+      tags: [Readings]
+      summary: Paginated installation history
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/from' }, { $ref: '#/components/parameters/to' }, { $ref: '#/components/parameters/sort' }, { $ref: '#/components/parameters/page' }, { $ref: '#/components/parameters/pageSize' }, { $ref: '#/components/parameters/ifNoneMatch' }]
+      responses: { '200': { $ref: '#/components/responses/History' }, '304': { description: Not modified; no body } }
+    post:
+      tags: [Readings]
+      summary: Append one reading as this installation's device
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReadingInput' }
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /solar-installations/{installationId}/generation-readings/{readingId}:
+    parameters: [{ $ref: '#/components/parameters/installationId' }, { $ref: '#/components/parameters/readingId' }]
+    get: { tags: [Readings], summary: Get an immutable reading, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+  /provinces/{provinceId}/generation-readings:
+    parameters: [{ $ref: '#/components/parameters/provinceId' }]
+    get: { tags: [Readings], summary: Paginated province history, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/History' } } }
+  /districts/{districtId}/generation-readings:
+    parameters: [{ $ref: '#/components/parameters/districtId' }]
+    get: { tags: [Readings], summary: Paginated district history, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/History' } } }
+  /grid-substations/{substationId}/generation-readings:
+    parameters: [{ $ref: '#/components/parameters/substationId' }]
+    get: { tags: [Readings], summary: Paginated substation history, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/History' } } }
+  /districts/{districtId}/generation-summary:
+    parameters: [{ $ref: '#/components/parameters/districtId' }]
+    get: { tags: [Operations], summary: Current power and today's energy for a district, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Item' } } }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    provinceId: { name: provinceId, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    districtId: { name: districtId, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    substationId: { name: substationId, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    installationId: { name: installationId, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    readingId: { name: readingId, in: path, required: true, schema: { type: string, pattern: '^[1-9][0-9]*$' } }
+    from: { name: from, in: query, schema: { type: string, format: date-time }, description: Inclusive start }
+    to: { name: to, in: query, schema: { type: string, format: date-time }, description: Exclusive end }
+    sort: { name: sort, in: query, schema: { type: string, enum: [timestamp_asc, timestamp_desc], default: timestamp_desc } }
+    page: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    pageSize: { name: page_size, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
+    ifNoneMatch: { name: If-None-Match, in: header, schema: { type: string } }
+  schemas:
+    Credentials:
+      type: object
+      required: [identity, secret]
+      properties:
+        identity: { type: string, description: Username or meter ID }
+        secret: { type: string, format: password }
+    Token:
+      type: object
+      properties:
+        access_token: { type: string }
+        token_type: { type: string, example: Bearer }
+        expires_in: { type: integer, example: 900 }
+        scope: { type: string }
+    ProvinceInput:
+      type: object
+      required: [code, name]
+      properties:
+        code: { type: string, example: WESTERN }
+        name: { type: string, example: Western }
+    ReadingInput:
+      type: object
+      required: [recorded_at, power_kw, energy_kwh, voltage]
+      properties:
+        recorded_at: { type: string, format: date-time }
+        power_kw: { type: number, minimum: 0 }
+        energy_kwh: { type: number, minimum: 0 }
+        voltage: { type: number, exclusiveMinimum: 0 }
+    Error:
+      type: object
+      required: [code, message, details]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details: { nullable: true }
+    History:
+      type: object
+      properties:
+        data: { type: array, items: { type: object } }
+        pagination:
+          type: object
+          properties:
+            total: { type: integer }
+            page: { type: integer }
+            page_size: { type: integer }
+            next: { type: string, nullable: true }
+            previous: { type: string, nullable: true }
+  requestBodies:
+    Province:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ProvinceInput' }
+  responses:
+    Error:
+      description: Structured API error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Item:
+      description: JSON resource
+      headers:
+        ETag: { schema: { type: string } }
+        Last-Modified: { schema: { type: string } }
+      content:
+        application/json:
+          schema: { type: object }
+    Collection:
+      description: Scoped JSON collection
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data: { type: array, items: { type: object } }
+    History:
+      description: Scoped paginated readings
+      headers:
+        ETag: { schema: { type: string } }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/History' }
+    Created:
+      description: Resource created
+      headers:
+        Location: { schema: { type: string }, description: Canonical URI of the created resource }
+        ETag: { schema: { type: string } }
+      content:
+        application/json:
+          schema: { type: object }
